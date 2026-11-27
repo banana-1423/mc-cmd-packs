@@ -68,7 +68,7 @@ class PacksView(tk.Frame):
         self.list_scroll.pack(fill="both", expand=True)
 
         hint = ("上传方式：在 GitHub 网页新建 packs/你的包名.json 并提交，"
-                "机器人自动校验并通过即入库。")
+                "每条指令都要带一句简介（note），机器人校验通过即入库。")
         tk.Label(body, text=hint, bg=SURFACE, fg=TEXT_MUTE, font=(FONT_UI, 7),
                  anchor="w", justify="left").pack(fill="x", pady=(u(6), 0))
 

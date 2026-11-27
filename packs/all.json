@@ -1,43 +1,43 @@
 {
   "spec": "mc-cmd-all/1",
-  "updated": "2026-11-27T13:20:06Z",
+  "updated": "2026-11-27T13:44:20Z",
   "count": 1,
   "packs": [
     {
       "spec": "mc-cmd-pack/1",
       "name": "生存实用指令",
-      "description": "开新档常用的一组指令，编号即条目序号",
+      "description": "开新档常用的一组指令，每条都带一句简介",
       "author": "MC 指令工具台",
-      "version": "1.0",
+      "version": "1.1",
       "items": [
         {
           "id": 1,
           "command": "/give @p minecraft:diamond_pickaxe 1",
-          "note": "",
+          "note": "给自己一把钻石镐",
           "index": 1
         },
         {
           "id": 2,
           "command": "/time set day",
-          "note": "",
+          "note": "把时间调到白天",
           "index": 2
         },
         {
           "id": 3,
           "command": "/weather clear",
-          "note": "",
+          "note": "立刻放晴",
           "index": 3
         },
         {
           "id": 4,
           "command": "/gamerule keepInventory true",
-          "note": "死亡不掉落",
+          "note": "开启死亡不掉落",
           "index": 4
         },
         {
           "id": 5,
           "command": "/gamerule doDaylightCycle false",
-          "note": "锁定时间",
+          "note": "锁定昼夜循环",
           "index": 5
         }
       ],

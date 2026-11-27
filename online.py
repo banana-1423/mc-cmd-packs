@@ -156,9 +156,17 @@ def sync(repo, branch="main", timeout=12):
 
 
 def _fallback(message):
+    import pack_spec
+
     cached = load_cache()
     if cached:
-        return _result(True, message + "，已使用本地缓存（%s）" %
-                       cache_age_text(), cached.get("packs", []), True,
-                       cached.get("updated", ""))
+        packs = []
+        for item in cached.get("packs", []):
+            pack, _errors = pack_spec.ensure_pack(item)
+            if pack is not None:
+                packs.append(pack)
+        if packs:
+            return _result(True, message + "，已使用本地缓存（%s）" %
+                           cache_age_text(), packs, True,
+                           cached.get("updated", ""))
     return _result(False, message)

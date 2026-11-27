@@ -15,13 +15,16 @@ MAX_COMMANDS = 500
 SAMPLE = {
     "spec": "mc-cmd-pack/1",
     "name": "生存实用指令",
-    "description": "常用生存指令合集，编号即指令序号",
+    "description": "常用生存指令合集，每条都带一句简介",
     "author": "你的名字",
     "version": "1.0",
     "commands": {
-        "1": "/give @p minecraft:diamond 1",
-        "2": "/time set day",
-        "3": {"command": "/gamerule keepInventory true", "note": "死亡不掉落"},
+        "1": {"command": "/give @p minecraft:diamond 1",
+              "note": "给自己一颗钻石"},
+        "2": {"command": "/time set day",
+              "note": "把时间调到白天"},
+        "3": {"command": "/gamerule keepInventory true",
+              "note": "开启死亡不掉落"},
     },
 }
 
@@ -32,27 +35,34 @@ SPEC_DOC = """{
   "author": "张三",
   "version": "1.0",
   "commands": {
-    "1": "/give @p diamond 1",
-    "2": {"command": "/time set day",
-          "note": "设为白天"}
+    "1": {
+      "command": "/give @p diamond 1",
+      "note": "给自己一颗钻石"
+    },
+    "2": {
+      "command": "/time set day",
+      "note": "把时间设为白天"
+    }
   }
 }
 
 也可以写成数组，编号自动补：
 "commands": [
-  {"id": 1,
-   "command": "/give @p diamond 1",
-   "note": "给钻石"}
+  {
+    "command": "/give @p diamond 1",
+    "note": "给自己一颗钻石"
+  }
 ]"""
 
 RULES = [
     "文件必须是 UTF-8 编码的 JSON 对象，最大 1 MB。",
-    "name 必填，1~40 个字符；description 必填，1~300 个字符。",
-    "commands 必填，支持「编号映射」或「数组」两种写法，1~500 条。",
-    "编号必须是正整数且不重复；数组写法可省略编号，按顺序补 1、2、3…",
-    "每条指令必须以 / 开头，长度不超过 200，不能包含换行。",
-    "note（备注）可选，最多 60 字，会作为指令说明显示。",
-    "校验通过后自动入库，出现在「模组索引」的扩展包分组里。",
+    "name 必填 1~40 字，description 必填 1~300 字。",
+    "每条指令都写成 {\"command\": ..., \"note\": ...}，两个字段都必填。",
+    "note 是这一条的简介，1~60 字，会作为指令名显示。",
+    "command 以 / 开头，≤200 字符，不能包含换行。",
+    "commands 必填，映射或数组都行，1~500 条。",
+    "编号必须是正整数且不重复；数组写法可省略编号。",
+    "校验通过自动入库，出现在「模组索引」的扩展包分组里。",
 ]
 
 
@@ -204,23 +214,28 @@ def validate_pack(data):
 
 
 def _parse_item(value, path, number, errors):
-    note = ""
-    command = value
+    if not isinstance(value, dict):
+        _err(errors, path,
+             "每条指令都要写成 {\"command\": \"...\", \"note\": \"...\"}，"
+             "不能只写一个字符串")
+        return None
 
-    if isinstance(value, dict):
-        command = value.get("command")
-        note = value.get("note", "") or ""
-        if not isinstance(note, str):
-            _err(errors, path + ".note", "note 必须是字符串")
-            note = ""
-        elif len(note.strip()) > MAX_NOTE:
-            _err(errors, path + ".note",
-                 "note 过长（%d 字），最多 %d 字" % (len(note.strip()), MAX_NOTE))
-        note = note.strip()
-        if "command" not in value:
-            _err(errors, path, "缺少 command 字段")
-            return None
+    if "command" not in value:
+        _err(errors, path, "缺少 command 字段")
+        return None
 
+    note = value.get("note")
+    if not isinstance(note, str) or not note.strip():
+        _err(errors, path + ".note",
+             "缺少 note：每条指令都必须有简介")
+        return None
+    note = note.strip()
+    if len(note) > MAX_NOTE:
+        _err(errors, path + ".note",
+             "note 过长（%d 字），最多 %d 字" % (len(note), MAX_NOTE))
+        return None
+
+    command = value.get("command")
     if not isinstance(command, str):
         _err(errors, path + ".command", "指令必须是字符串，当前是 %s" %
              type(command).__name__)
@@ -255,10 +270,10 @@ def pack_to_entries(pack, pack_id):
     for item in pack["items"]:
         note = item["note"]
         entries.append({
-            "name": note or ("%s · %d" % (pack["name"], item["id"])),
+            "name": note,
             "syntax": item["command"],
             "category": "扩展",
-            "desc": note or "来自扩展包「%s」的第 %d 条指令" % (
+            "desc": "来自扩展指令包「%s」的第 %d 条，简介由提交者填写。" % (
                 pack["name"], item["id"]),
             "params": [
                 ("编号", "#%d" % item["id"], "扩展包内编号"),
@@ -311,10 +326,19 @@ def ensure_pack(data):
             except (TypeError, ValueError):
                 _err(errors, path + ".id", "id 必须是整数")
                 continue
+            note = str(item.get("note") or "").strip()
+            if not note:
+                _err(errors, path + ".note",
+                     "缺少 note：每条指令都必须有简介")
+                continue
+            if len(note) > MAX_NOTE:
+                _err(errors, path + ".note",
+                     "note 过长（%d 字），最多 %d 字" % (len(note), MAX_NOTE))
+                continue
             items.append({
                 "id": number,
                 "command": command.strip(),
-                "note": str(item.get("note") or "").strip()[:MAX_NOTE],
+                "note": note,
                 "index": position + 1,
             })
         if errors:

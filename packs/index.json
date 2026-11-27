@@ -1,17 +1,17 @@
 {
   "spec": "mc-cmd-index/1",
-  "updated": "2026-11-27T13:20:06Z",
+  "updated": "2026-11-27T13:44:20Z",
   "count": 1,
   "packs": [
     {
       "file": "example-pack.json",
       "id": "b34f764f64",
       "name": "生存实用指令",
-      "description": "开新档常用的一组指令，编号即条目序号",
+      "description": "开新档常用的一组指令，每条都带一句简介",
       "author": "MC 指令工具台",
-      "version": "1.0",
+      "version": "1.1",
       "count": 5,
-      "sha256": "6681edc4f8bc422d"
+      "sha256": "619096bc5c3d4b06"
     }
   ]
 }
