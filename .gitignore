@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/
+.shot*.png
+.err.txt
+.out.txt
+.probe.py

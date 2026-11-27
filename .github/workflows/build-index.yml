@@ -1,0 +1,41 @@
+name: 重建指令包索引
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packs/*.json"
+      - "tools/build_index.py"
+      - "pack_spec.py"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 生成 index.json / all.json
+        run: python tools/build_index.py
+
+      - name: 提交索引
+        run: |
+          git config user.name "pack-bot"
+          git config user.email "pack-bot@users.noreply.github.com"
+          git add packs/index.json packs/all.json
+          if git diff --cached --quiet; then
+            echo "索引无变化"
+            exit 0
+          fi
+          git commit -m "chore: 更新指令包索引"
+          git push

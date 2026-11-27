@@ -1,0 +1,80 @@
+name: 校验指令包
+
+on:
+  pull_request:
+    paths:
+      - "packs/*.json"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validate:
+    if: github.event.pull_request.user.login != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 准备 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 校验变动的指令包
+        id: validate
+        continue-on-error: true
+        run: |
+          python tools/validate_pack.py --changed "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | tee result.txt
+          exit ${PIPESTATUS[0]}
+
+      - name: 生成评论内容
+        if: always()
+        run: |
+          {
+            echo "## 指令包格式校验"
+            echo
+            echo '```'
+            cat result.txt 2>/dev/null || echo "没有检测到 packs/*.json 变动"
+            echo '```'
+          } > result.md
+
+      - name: 通过时合并
+        if: steps.validate.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          echo "校验通过，正在自动合并。" >> result.md
+          gh pr comment "$PR" --body-file result.md
+          gh pr merge "$PR" --squash
+
+      - name: 失败时评论并关闭
+        if: steps.validate.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          echo "校验未通过，请按上面的错误修改后重新提交。" >> result.md
+          gh pr comment "$PR" --body-file result.md
+          gh pr close "$PR" --comment "格式校验未通过，已自动关闭。修正后可以重新提交。"
+
+      - name: 重建索引并推送
+        if: steps.validate.outcome == 'success'
+        run: |
+          git config user.name "pack-bot"
+          git config user.email "pack-bot@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          python tools/build_index.py
+          git add packs/index.json packs/all.json
+          if git diff --cached --quiet; then
+            echo "索引无变化"
+            exit 0
+          fi
+          git commit -m "chore: 更新指令包索引"
+          git push origin HEAD:main

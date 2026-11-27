@@ -1,0 +1,222 @@
+# -*- coding: utf-8 -*-
+"""热门模组 / 插件指令索引。"""
+
+from data_common import cmd, build_index
+
+MODS = [
+    {"id": "carpet", "name": "Carpet 地毯", "loader": "Fabric",
+     "desc": "服务端／单机调试神器：假人、加速刻、规则开关"},
+    {"id": "spark", "name": "Spark 性能分析", "loader": "Fabric / Forge",
+     "desc": "查看 TPS、找出卡顿原因的采样器"},
+    {"id": "chunky", "name": "Chunky 预生成", "loader": "Fabric / Forge",
+     "desc": "提前生成区块，减少跑图卡顿"},
+    {"id": "journeymap", "name": "JourneyMap 旅行地图", "loader": "Fabric / Forge",
+     "desc": "小地图与路径点，服务端也常用"},
+    {"id": "ftbquests", "name": "FTB Quests 任务", "loader": "Fabric / Forge",
+     "desc": "整合包任务系统，控制编辑模式与生命数"},
+    {"id": "ae2", "name": "AE2 应用能源", "loader": "Fabric / Forge",
+     "desc": "存储与自动化网络，频道模式常用指令"},
+    {"id": "worldedit", "name": "WorldEdit 创世神", "loader": "Fabric / Forge / 插件",
+     "desc": "指令建筑与地形编辑，双斜杠开头"},
+]
+
+MOD_COMMANDS = [
+    # ---------------------------------------------------------------- Carpet
+    cmd("修改地毯规则", "/carpet <规则名> <值>",
+        "服务器", "开启或关闭 Carpet 提供的规则，比如刷怪、堆叠、边界。",
+        [("规则名", "lagFreeSpawning / tntDoNotUpdate", "执行 /carpet list 查看全部"),
+         ("值", "true / false / 数字", "规则值")],
+        ["/carpet lagFreeSpawning true",
+         "/carpet commandPlayer true"],
+        notes="Carpet 规则非常多，改完立即生效且会写进世界文件夹的配置文件。",
+        keywords="carpet 地毯 规则 优化",
+        mod="carpet", mod_name="Carpet 地毯"),
+
+    cmd("列出地毯规则", "/carpet list",
+        "服务器", "列出所有可用的 Carpet 规则及当前值。",
+        [],
+        ["/carpet list"],
+        keywords="carpet list 规则 列表",
+        mod="carpet", mod_name="Carpet 地毯"),
+
+    cmd("生成假人", "/player <名字> spawn|kill|use",
+        "服务器", "召唤一个可自动挂机的假人，常用于测试刷怪与机器。",
+        [("名字", "bot1", "假人名字，不能与已有玩家重名"),
+         ("操作", "spawn / kill / use", "生成、移除、让它持续使用手中物品")],
+        ["/player bot1 spawn", "/player bot1 kill", "/player bot1 use continuous"],
+        keywords="player 假人 bot 挂机",
+        mod="carpet", mod_name="Carpet 地毯"),
+
+    cmd("加速游戏刻", "/tick warp <刻数>",
+        "服务器", "瞬间快进指定刻数，用来跳过熔炉、作物等待时间。",
+        [("刻数", "72000", "20 刻 = 1 秒，72000 刻 = 1 小时")],
+        ["/tick warp 72000"],
+        notes="warp 会同步推进整个世界，机器与刷怪塔都会跟着跑。",
+        keywords="tick warp 加速 快进 时间",
+        mod="carpet", mod_name="Carpet 地毯"),
+
+    cmd("冻结时间", "/tick freeze | /tick unfreeze",
+        "服务器", "暂停或恢复整个世界刻的推进。",
+        [],
+        ["/tick freeze", "/tick unfreeze"],
+        keywords="tick freeze 冻结 暂停",
+        mod="carpet", mod_name="Carpet 地毯"),
+
+    cmd("调试日志", "/log <日志器> <选项>",
+        "服务器", "打开 Carpet 内置的调试日志，比如刷怪、AI、tps。",
+        [("日志器", "tps / mobcaps / spawning", "日志类型"),
+         ("选项", "true / false", "开关")],
+        ["/log mobcaps", "/log tps true"],
+        keywords="log 日志 调试 刷怪",
+        mod="carpet", mod_name="Carpet 地毯"),
+
+    # ---------------------------------------------------------------- Spark
+    cmd("查看 TPS", "/spark tps",
+        "服务器", "显示最近 1/5/15 分钟的平均 TPS，判断服务器是否卡顿。",
+        [],
+        ["/spark tps"],
+        keywords="spark tps 卡顿 性能",
+        mod="spark", mod_name="Spark 性能分析"),
+
+    cmd("性能采样", "/spark profiler start|stop",
+        "服务器", "采样 30 秒并给出「谁在吃 CPU」的报告链接。",
+        [("start", "spark profiler start", "开始采样"),
+         ("stop", "spark profiler stop", "结束并生成链接")],
+        ["/spark profiler start", "/spark profiler stop"],
+        keywords="spark profiler 采样 分析 cpu",
+        mod="spark", mod_name="Spark 性能分析"),
+
+    cmd("服务器健康报告", "/spark health",
+        "服务器", "生成一份包含 TPS、内存、磁盘的健康报告。",
+        [],
+        ["/spark health"],
+        keywords="spark health 健康 报告 内存",
+        mod="spark", mod_name="Spark 性能分析"),
+
+    # ---------------------------------------------------------------- Chunky
+    cmd("设置预生成范围", "/chunky radius <半径>",
+        "服务器", "设置以当前位置为中心的预生成半径（区块）。",
+        [("半径", "1000", "单位为方块，1000 ≈ 2000x2000 区域")],
+        ["/chunky radius 2000"],
+        keywords="chunky 预生成 区块 半径",
+        mod="chunky", mod_name="Chunky 预生成"),
+
+    cmd("开始预生成", "/chunky start",
+        "服务器", "按设定半径开始生成区块，跑图时不再卡顿。",
+        [],
+        ["/chunky start"],
+        notes="预生成会占用 CPU，建议开服后先跑完再做别的事。",
+        keywords="chunky start 预生成 开始",
+        mod="chunky", mod_name="Chunky 预生成"),
+
+    cmd("取消预生成", "/chunky cancel",
+        "服务器", "停止正在进行的区块生成任务。",
+        [],
+        ["/chunky cancel"],
+        keywords="chunky cancel 停止 取消",
+        mod="chunky", mod_name="Chunky 预生成"),
+
+    # ---------------------------------------------------------------- JourneyMap
+    cmd("创建路径点", "/jm waypoint create <名字>",
+        "玩家", "在当前位置创建一个小地图路径点，方便回程。",
+        [("名字", "家 / 矿洞", "路径点名称，同一维度内唯一")],
+        ["/jm waypoint create 家", "/jm waypoint create 刷怪塔"],
+        keywords="jm journeymap 路径点 标记 传送点",
+        mod="journeymap", mod_name="JourneyMap 旅行地图"),
+
+    cmd("列出路径点", "/jm waypoint list",
+        "玩家", "列出当前维度保存的所有路径点。",
+        [],
+        ["/jm waypoint list"],
+        keywords="jm waypoint list 路径点 列表",
+        mod="journeymap", mod_name="JourneyMap 旅行地图"),
+
+    cmd("地图预览", "/jm preview <x> <y> <z>",
+        "玩家", "在聊天栏输出指定坐标附近的地图预览。",
+        [("坐标", "0 64 0", "任意维度坐标")],
+        ["/jm preview 0 64 0"],
+        keywords="jm preview 地图 预览",
+        mod="journeymap", mod_name="JourneyMap 旅行地图"),
+
+    # ---------------------------------------------------------------- FTB Quests
+    cmd("任务编辑模式", "/ftbquests editing_mode",
+        "服务器", "开关 FTB 任务的编辑模式，进入后可拖动任务节点。",
+        [],
+        ["/ftbquests editing_mode"],
+        notes="编辑模式下所有玩家都会看到编辑界面，调完记得关掉。",
+        keywords="ftbquests 任务 编辑",
+        mod="ftbquests", mod_name="FTB Quests 任务"),
+
+    cmd("增加生命数", "/ftbquests lives add <玩家> <数量>",
+        "服务器", "给玩家增加任务生命数（配合硬核模式使用）。",
+        [("玩家", "@p / 玩家名", "目标玩家"),
+         ("数量", "3", "可为负数")],
+        ["/ftbquests lives add @p 3"],
+        keywords="ftbquests lives 生命 硬核",
+        mod="ftbquests", mod_name="FTB Quests 任务"),
+
+    cmd("修改任务进度", "/ftbquests change_progress <玩家> <任务ID> <操作>",
+        "服务器", "直接完成或重置某个任务，用于调试与补偿。",
+        [("玩家", "@p", "目标玩家"),
+         ("任务ID", "1A2B3C4D", "任务文件里的十六进制 ID"),
+         ("操作", "complete / reset", "完成或重置")],
+        ["/ftbquests change_progress @p 1A2B3C4D complete"],
+        keywords="ftbquests 进度 完成 任务",
+        mod="ftbquests", mod_name="FTB Quests 任务"),
+
+    # ---------------------------------------------------------------- AE2
+    cmd("设置频道模式", "/ae2 channelmode <模式>",
+        "服务器", "切换 ME 网络频道限制，整合包里常用来降低难度。",
+        [("模式", "default / x2 / x3 / x4 / infinite", "infinite 表示不限频道")],
+        ["/ae2 channelmode infinite"],
+        notes="改完需要重进世界或重新加载区块才完全生效。",
+        keywords="ae2 频道 channel 模式 应用能源",
+        mod="ae2", mod_name="AE2 应用能源"),
+
+    cmd("查看频道占用", "/ae2 channels",
+        "服务器", "列出各网络的频道使用情况，排查网络掉线。",
+        [],
+        ["/ae2 channels"],
+        keywords="ae2 channels 频道 网络 掉线",
+        mod="ae2", mod_name="AE2 应用能源"),
+
+    # ---------------------------------------------------------------- WorldEdit
+    cmd("获取选区工具", "//wand",
+        "世界", "拿到木斧，左键右键各点一次确定选区。",
+        [],
+        ["//wand"],
+        keywords="worldedit wand 选区 木斧 创世神",
+        mod="worldedit", mod_name="WorldEdit 创世神"),
+
+    cmd("填充选区", "//set <方块>",
+        "世界", "把选区内的方块全部替换为指定方块。",
+        [("方块", "stone / 35:14", "1.13+ 用 minecraft:stone")],
+        ["//set stone", "//set minecraft:glass"],
+        keywords="worldedit set 填充 选区 建筑",
+        mod="worldedit", mod_name="WorldEdit 创世神"),
+
+    cmd("复制粘贴", "//copy 然后 //paste",
+        "世界", "复制当前选区，再粘贴到另一处，做重复建筑很快。",
+        [],
+        ["//copy", "//paste", "//paste -a"],
+        notes="-a 表示忽略空气，做叠加建筑时常用。",
+        keywords="worldedit copy paste 复制 粘贴",
+        mod="worldedit", mod_name="WorldEdit 创世神"),
+
+    cmd("生成球体", "//sphere <方块> <半径>",
+        "世界", "以玩家位置为中心生成球体，做装饰与试验场。",
+        [("方块", "minecraft:glass", "方块 ID"),
+         ("半径", "10", "球体半径")],
+        ["//sphere glass 10", "//hsphere glass 15"],
+        keywords="worldedit sphere 球 生成",
+        mod="worldedit", mod_name="WorldEdit 创世神"),
+
+    cmd("撤销操作", "//undo",
+        "世界", "撤销上一步 WorldEdit 操作，手滑时救命。",
+        [],
+        ["//undo", "//redo"],
+        keywords="worldedit undo 撤销 回退",
+        mod="worldedit", mod_name="WorldEdit 创世神"),
+]
+
+build_index(MOD_COMMANDS)
