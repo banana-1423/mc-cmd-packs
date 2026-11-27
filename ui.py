@@ -538,7 +538,7 @@ class Chip(tk.Canvas):
 
     def _on_click(self, _e):
         if self._command:
-            self._command(self)
+            self._command()
 
     def _draw(self):
         self.delete("all")

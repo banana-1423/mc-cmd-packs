@@ -60,7 +60,7 @@ class ExplorerView(tk.Frame):
         self.chips.configure(height=u(28))
         self.chips.pack(fill="x", pady=(u(10), u(6)))
         for key, label in self.filters:
-            chip = Chip(self.chips, label, command=lambda w, k=key: self._set_filter(k))
+            chip = Chip(self.chips, label, command=lambda k=key: self._set_filter(k))
             chip.set_active(key == self._filter)
             self.chips.add(chip)
             self._filter_chips.append((key, chip))
@@ -115,7 +115,7 @@ class ExplorerView(tk.Frame):
         self._filter_chips = []
         for key, label in filters:
             chip = Chip(self.chips, label,
-                        command=lambda widget, k=key: self._set_filter(k))
+                        command=lambda k=key: self._set_filter(k))
             chip.set_active(key == self._filter)
             self.chips.add(chip)
             self._filter_chips.append((key, chip))
