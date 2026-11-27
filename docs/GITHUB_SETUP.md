@@ -47,6 +47,9 @@ git config --global user.email "你的邮箱"
 3. 勾选 **Allow GitHub Actions to create and approve pull requests**
 4. 点 Save
 
+> 当前仓库 `banana-1423/mc-cmd-packs` 已经通过 API 设置为
+> `default_workflow_permissions=write` 且允许 Actions 创建/批准 PR，这一步不用再点。
+
 再到 **Settings → General → Pull Requests**：
 
 5. 勾选 **Allow squash merging**（工作流使用 squash 合并）
@@ -93,6 +96,42 @@ git config --global user.email "你的邮箱"
 | 删除某个包 | 删除 `packs/xxx.json` 并提交，索引会自动重建 |
 | 手动校验 | `python tools\validate_pack.py packs\xxx.json` |
 | 手动重建索引 | `python tools\build_index.py` |
+
+## 国内网络：push 卡住、认证弹窗后连接被重置
+
+现象：`info: please complete authentication in your browser...` 之后
+`fatal: ... Recv failure: Connection was reset`，或者一直卡在 `Trying github.com:443`。
+
+原因有两层：
+
+1. Git 自带的 OpenSSL 后端连 `github.com:443` 会被重置（同一时刻 curl 却能通）；
+2. Watt Toolkit 只加速 Steam/CDN，但它会把系统代理设成 `127.0.0.1:26559`，
+   认证组件（GCM）走这个代理时证书吊销检查失败，于是浏览器授权完成后仍然报连接重置。
+
+实测可行的做法：**系统代理 + Windows 证书后端**，一条命令即可
+
+```powershell
+git -c http.sslBackend=schannel -c http.proxy=http://127.0.0.1:26559 push -u origin main
+```
+
+- 代理端口在 Watt Toolkit 加速运行时才存在，关掉加速后要去掉 `-c http.proxy=...`，否则会报连不上代理。
+- 凭据已经存在 Git Credential Manager 里（`banana-1423`），正常不需要重新登录。
+- 拉取同理：把 `push` 换成 `pull --ff-only` / `fetch`。
+- 想一劳永逸可以写进仓库配置：`git config http.proxy http://127.0.0.1:26559`
+  （关加速前记得 `git config --unset http.proxy`）。
+
+备选：SSH over 443，不需要代理（`ssh.github.com:443` 可直连）
+
+```powershell
+ssh-keygen -t ed25519 -C "banana-1423" -f $env:USERPROFILE\.ssh\id_ed25519_github
+# 把 .pub 内容贴到 https://github.com/settings/ssh/new
+git remote set-url origin git@github.com:banana-1423/mc-cmd-packs.git
+git -c core.sshCommand="ssh -p 443 -i $env:USERPROFILE/.ssh/id_ed25519_github" push -u origin main
+```
+
+首次连接会询问是否信任 `ssh.github.com` 的指纹，需要手动输入 `yes`。
+如果 ssh 报 `Bad owner or permissions on .../.ssh/config`，说明该文件的 ACL 里有残留账号，
+用 `icacls "%USERPROFILE%\.ssh\config" /inheritance:r /grant:r "%USERNAME%:F"` 修一下即可。
 
 ## 排错
 
