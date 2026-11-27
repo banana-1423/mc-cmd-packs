@@ -1,7 +1,7 @@
 {
   "spec": "mc-cmd-index/1",
-  "updated": "2026-11-27T12:55:06Z",
-  "count": 1,
+  "updated": "2026-11-27T13:19:07Z",
+  "count": 2,
   "packs": [
     {
       "file": "example-pack.json",
@@ -12,6 +12,16 @@
       "version": "1.0",
       "count": 5,
       "sha256": "6681edc4f8bc422d"
+    },
+    {
+      "file": "automerge-check.json",
+      "id": "fff771527c",
+      "name": "自动合并自检包",
+      "description": "用于验证 PR 自动校验与合并流程，验证完成后会被删除",
+      "author": "banana-1423",
+      "version": "1.0",
+      "count": 2,
+      "sha256": "9a9bfdf1f3587f88"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "spec": "mc-cmd-all/1",
-  "updated": "2026-11-27T12:55:06Z",
-  "count": 1,
+  "updated": "2026-11-27T13:19:07Z",
+  "count": 2,
   "packs": [
     {
       "spec": "mc-cmd-pack/1",
@@ -43,6 +43,29 @@
       ],
       "id": "b34f764f64",
       "file": "example-pack.json"
+    },
+    {
+      "spec": "mc-cmd-pack/1",
+      "name": "自动合并自检包",
+      "description": "用于验证 PR 自动校验与合并流程，验证完成后会被删除",
+      "author": "banana-1423",
+      "version": "1.0",
+      "items": [
+        {
+          "id": 1,
+          "command": "/time set day",
+          "note": "",
+          "index": 1
+        },
+        {
+          "id": 2,
+          "command": "/weather clear",
+          "note": "晴天",
+          "index": 2
+        }
+      ],
+      "id": "fff771527c",
+      "file": "automerge-check.json"
     }
   ]
 }
